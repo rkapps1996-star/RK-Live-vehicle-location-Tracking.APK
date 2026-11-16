@@ -26,12 +26,12 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
 
-      - name: Accept SDK Licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Install SDK
+      - name: Install Android SDK Packages
         run: |
+          yes | sdkmanager --licenses || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Setup Gradle
@@ -42,8 +42,8 @@ jobs:
       - name: Check Project
         run: |
           ls -la
-          test -d app || (echo "ERROR: app folder missing" && exit 1)
-          test -f settings.gradle -o -f settings.gradle.kts || (echo "ERROR: settings.gradle missing" && exit 1)
+          test -d app
+          test -f settings.gradle || test -f settings.gradle.kts
 
       - name: Build APK
         run: gradle --no-daemon assembleDebug
