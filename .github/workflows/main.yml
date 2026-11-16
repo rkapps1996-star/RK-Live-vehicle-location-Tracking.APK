@@ -33,8 +33,9 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build APK
-        run: gradle --no-daemon assembleDebug
+      - name: Grant Permission
+        run: chmod +x gradlew
+
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
