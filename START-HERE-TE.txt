@@ -1,0 +1,21 @@
+RK LIVE VEHICLE TRACKING — APK తయారీ
+
+ఈ ZIPలో Android Studio ప్రాజెక్ట్ ఉంది. ఇక్కడ APK compile చేయడానికి Android SDK అందుబాటులో లేకపోవడంతో APK ఫైల్‌ను ఈ ZIPలో చేర్చలేదు. GitHub Actions ద్వారా ఉచితంగా APK build చేయవచ్చు.
+
+సులభమైన విధానం (ఫోన్ నుంచే):
+1. ZIPను Android ఫోన్‌లో Extract చేయండి. లోపల RKVehicleTracking-Android ఫోల్డర్ ఉంటుంది.
+2. GitHubలో కొత్త repository సృష్టించండి (ఉదా: rk-live-vehicle-tracking-apk).
+3. Extract చేసిన RKVehicleTracking-Android ఫోల్డర్ లోపలి ఫైళ్లను repository rootకు upload చేయండి. app, gradle, .github ఫోల్డర్లు సహా అన్ని ఫైళ్లు ఉండాలి.
+4. .github ఫోల్డర్ upload చేయడం కష్టమైతే, GitHubలో Add file → Create new file ఎంచుకుని filenameగా .github/workflows/build-apk.yml ఇవ్వండి. ఈ ZIPలోని GITHUB-ACTIONS-WORKFLOW.txt ఫైల్‌లో ఉన్న పూర్తి workflow textను paste చేసి commit చేయండి.
+5. Repositoryలో Actions → Build RK Vehicle Tracking APK → Run workflow నొక్కండి. Build పూర్తయ్యాక ఆ runలో Artifacts కింద RK-LIVE-VEHICLE-TRACKING-debug-apk download చేయండి.
+6. Download అయిన artifact ZIPను Extract చేసి app-debug.apkను తెరిచి Install చేయండి. Android అడిగితే ఆ source నుంచి Install unknown apps అనుమతి ఇవ్వండి.
+
+ప్రధాన వివరాలు:
+• App ID: com.rkapps.vehicletracking
+• కనీస Android: 6.0 (API 23)
+• Target SDK: 35
+• Login అవసరం లేదు; వాహన డేటా ఈ ఫోన్‌లోనే ఉంటుంది.
+• GPS ప్రారంభిస్తే notificationతో Android foreground location service నడుస్తుంది. యజమాని Stop నొక్కి ఆపవచ్చు. Battery restrictions/Force Stop వల్ల tracking ఆగవచ్చు.
+• గంటవారీ రిపోర్టులు ఈ ఫోన్‌లోనే సేవ్ అవుతాయి. ఇతర ఫోన్లకు cloud live-sharing లేదు.
+• WhatsApp బటన్ తాజా మ్యాప్ లింక్‌ను మాత్రమే పంపుతుంది; నిరంతర Live Locationను WhatsAppలో ప్రత్యేకంగా ప్రారంభించాలి.
+• Vehicle GPS Device model/IMEI/server fields వివరాలు మాత్రమే సేవ్ చేస్తాయి; నిజమైన hardware data కోసం ఆ tracker provider API అవసరం.

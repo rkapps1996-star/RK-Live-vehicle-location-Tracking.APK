@@ -1,0 +1,13 @@
+{
+  "background_color": "#f3f8fb",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "RK LIVE VEHICLE TRACKING",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "RK Vehicle",
+  "start_url": "https://heroic-alfajores-68bfa1.netlify.app/",
+  "theme_color": "#087e8b",
+  "id": "com.rk.livetracking",
+  "description": "RK LIVE VEHICLE TRACKING - Secure real-time vehicle location sharing with family members, GPS tracking and vehicle management"
+}
