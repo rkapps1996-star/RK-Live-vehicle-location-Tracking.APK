@@ -26,8 +26,8 @@ jobs:
         with:
           packages: 'platform-tools'
 
-      - name: Grant Permission
-        run: chmod +x gradlew
+      - name: Build APK
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Build APK
         run: ./gradlew --no-daemon assembleDebug
