@@ -1,45 +1,57 @@
 
-name: Build RK Vehicle Tracking APK
+name: RK Vehicle Tracking APK Build
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept Android licenses
-        run: yes | sdkmanager --licenses
+      - name: Accept SDK Licenses
+        run: yes | sdkmanager --licenses || true
 
-      - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Install SDK
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      - name: Install Gradle
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Grant Permission
-        run: chmod +x gradlew
+      - name: Check Project
+        run: |
+          ls -la
+          test -d app || (echo "ERROR: app folder missing" && exit 1)
+          test -f settings.gradle -o -f settings.gradle.kts || (echo "ERROR: settings.gradle missing" && exit 1)
 
+      - name: Build APK
+        run: gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: RK-LIVE-VEHICLE-TRACKING-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: RK-Vehicle-Tracking-APK
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
           
