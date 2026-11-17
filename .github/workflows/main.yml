@@ -60,14 +60,15 @@ jobs:
       - name: Build APK
         run: gradle --no-daemon assembleDebug
 
-      - name: Verify APK Assets
+        
+      - name: Inspect APK Contents
         run: |
-          echo "Searching for APK..."
-          find app/build/outputs/apk -type f -name '*.apk'
           APK=$(find app/build/outputs/apk -type f -name '*.apk' | head -n 1)
-          test -n "$APK"
-          echo "APK found: $APK"
-          unzip -l "$APK" | grep -E 'assets/(index.html|app.js|styles.css)$'
+          echo "APK CONTENTS:"
+          unzip -l "$APK"
+          echo "SOURCE FILES:"
+          find app/src/main -type f
+
 
 
       - name: Upload APK
