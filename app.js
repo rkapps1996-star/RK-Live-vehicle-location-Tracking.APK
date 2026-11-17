@@ -7,6 +7,11 @@ const GPS_MODE_KEY = `rk-live-gps-mode-v1-${USER_SCOPE}`;
 const GPS_DEVICE_KEY = `rk-live-gps-device-v1-${USER_SCOPE}`;
 const REPORTS_KEY = `rk-live-hourly-reports-v1-${USER_SCOPE}`;
 const REPORT_INTERVAL_MS = 60 * 60 * 1000;
+const SUPABASE_URL = 'https://olucoxvhiatgxtymaolg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TY0c2hjU5vpCHLpfPAbKXg_piEil8Hs';
+let liveShareId = null;
+let liveSyncBusy = false;
+const LIVE_VIEWER_URL = 'https://livetrackingrk.netlify.app/viewer.html';
 
 let hourlyReports = readReports();
 let lastReportAt = Number(localStorage.getItem(REPORTS_KEY + '-last-report-at') || 0);
@@ -97,6 +102,20 @@ $('#vehicleList').addEventListener('click',e=>{
   if(!confirm('ఈ వాహనాన్ని తొలగించాలా?'))return;
   vehicles=vehicles.filter(v=>v.id!==b.dataset.remove); saveVehicles(); renderVehicles(); toast('వాహనం తొలగించబడింది.');
 });
+async function syncLiveLocation(pos, active=true){
+  if(!liveShareId || liveSyncBusy) return;
+  liveSyncBusy=true;
+  try {
+    const c=pos.coords;
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/live_locations?on_conflict=share_id`,{
+      method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({share_id:liveShareId,vehicle:$('#trackingVehicle').selectedOptions[0]?.textContent||'నా వాహనం',latitude:c.latitude,longitude:c.longitude,accuracy:c.accuracy,updated_at:new Date(pos.timestamp||Date.now()).toISOString(),active})
+    });
+    if(!response.ok) throw new Error(await response.text());
+    $('#ownerTrackingStatus').textContent='GPS ON • Live Mapకు లొకేషన్ అప్‌డేట్ అవుతోంది.';
+  } catch(e) { console.warn('Live sync failed',e); $('#ownerTrackingStatus').textContent='GPS ON • Cloud Sync సమస్య: '+e.message; }
+  finally { liveSyncBusy=false; }
+}
 function updateLocation(pos){
   currentPosition=pos; const {latitude,longitude,accuracy}=pos.coords;
   lastMapUrl=`https://www.google.com/maps?q=${latitude},${longitude}`;
@@ -104,7 +123,7 @@ function updateLocation(pos){
   $('#viewerLocation').textContent=`${latitude.toFixed(5)}, ${longitude.toFixed(5)} • ఖచ్చితత్వం ${Math.round(accuracy)} మీ. • ప్రాంతం పేరు వెతుకుతోంది…`;
   $('#whatsappShareBtn').disabled=false;
   resolveLocationName(latitude,longitude);
-  if(watchId!==null)saveHourlyReport(false);
+  if(watchId!==null){saveHourlyReport(false); syncLiveLocation(pos,true);}
   $('#lastUpdate').textContent='చివరి అప్‌డేట్: '+new Date(pos.timestamp).toLocaleTimeString('te-IN');
   $('#openViewerMapBtn').disabled=false;
   $('#viewerList').innerHTML='<div class="status">GPS లొకేషన్ ఈ ఫోన్‌లో మాత్రమే చూపబడుతోంది.</div>';
@@ -120,20 +139,22 @@ async function resolveLocationName(lat,lon){
   }catch(e){$('#viewerLocation').textContent=`${lat.toFixed(5)}, ${lon.toFixed(5)} • ప్రాంతం పేరు పొందలేకపోయాం`; }
 }
 $('#whatsappShareBtn').addEventListener('click',()=>{
-  if(!lastMapUrl)return toast('ముందుగా GPS ప్రారంభించండి.');
+  if(!liveShareId)return toast('ముందుగా Live Tracking ప్రారంభించండి.');
   const vehicle=$('#trackingVehicle').selectedOptions[0]?.textContent||'నా వాహనం';
-  const message=`${vehicle} ప్రస్తుత లొకేషన్: ${lastMapUrl}\nఈ లింక్ ఈ సమయానికి సంబంధించిన లొకేషన్ మాత్రమే. నిరంతర Live Location కోసం WhatsAppలో Attach → Location → Share Live Location ఎంచుకోండి.`;
+  const liveUrl=`${LIVE_VIEWER_URL}?id=${encodeURIComponent(liveShareId)}`;
+  const message=`${vehicle} Live Tracking\nఈ లింక్ ఓపెన్ చేస్తే వాహనం తాజా లొకేషన్ కనిపిస్తుంది.\n${liveUrl}\nనేను Stop Tracking నొక్కేవరకు అప్‌డేట్ అవుతుంది.`;
   window.open(`https://wa.me/?text=${encodeURIComponent(message)}`,'_blank','noopener,noreferrer');
 });
 $('#startTrackingBtn').addEventListener('click',()=>{
   if(!vehicles.length)return toast('ముందుగా వాహనం జోడించండి.');
   if(!navigator.geolocation)return toast('ఈ బ్రౌజర్ GPSకు మద్దతు ఇవ్వదు.');
-  if(!confirm('మీ ఫోన్ GPS లొకేషన్‌ను ఎంచుకున్న వాహనంతో లింక్ చేయడానికి అంగీకరిస్తున్నారా? లొకేషన్ ఈ ఫోన్‌లో మాత్రమే ఉంటుంది.'))return;
+  if(!confirm('మీ ఫోన్ GPS లొకేషన్‌ను ఎంచుకున్న వాహనంతో లింక్ చేసి Live Mapలో షేర్ చేయడానికి అంగీకరిస్తున్నారా?'))return;
+  liveShareId=crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&0x3|0x8)).toString(16);});
   $('#ownerTrackingStatus').textContent='GPS అనుమతి కోసం వేచి ఉంది…';
-  if(window.Android && Android.startTracking){const vehicle=$('#trackingVehicle').selectedOptions[0]?.textContent||'నా వాహనం';Android.startTracking(vehicle);}
+  if(window.Android && Android.startTracking){const vehicle=$('#trackingVehicle').selectedOptions[0]?.textContent||'నా వాహనం';Android.startTracking(vehicle,liveShareId);}
   watchId=navigator.geolocation.watchPosition(pos=>{updateLocation(pos);$('#ownerTrackingStatus').textContent='GPS ON • లొకేషన్ ఈ ఫోన్‌లో మాత్రమే సేవ్ / చూపబడుతుంది.';$('#stopTrackingBtn').disabled=false;renderVehicles();},err=>{watchId=null;$('#ownerTrackingStatus').textContent='GPS సమస్య: '+err.message;renderVehicles();toast('ఫోన్ సెట్టింగ్స్‌లో Location ON చేసి అనుమతి ఇవ్వండి.');},{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
 });
-function stopTracking(show=true){ if(window.Android && Android.stopTracking)Android.stopTracking(); if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId); watchId=null; $('#whatsappShareBtn').disabled=true; $('#stopTrackingBtn').disabled=true; $('#startTrackingBtn').disabled=!vehicles.length; $('#ownerTrackingStatus').textContent='షేరింగ్ ఆఫ్‌లో ఉంది.'; renderVehicles(); if(show)toast('GPS ట్రాకింగ్ ఆపబడింది.'); }
+function stopTracking(show=true){ if(liveShareId){fetch(`${SUPABASE_URL}/rest/v1/live_locations?share_id=eq.${encodeURIComponent(liveShareId)}`,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({active:false,updated_at:new Date().toISOString()})}).catch(console.warn);} if(window.Android && Android.stopTracking)Android.stopTracking(); if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId); watchId=null; $('#whatsappShareBtn').disabled=true; $('#stopTrackingBtn').disabled=true; $('#startTrackingBtn').disabled=!vehicles.length; $('#ownerTrackingStatus').textContent='షేరింగ్ ఆఫ్‌లో ఉంది.'; liveShareId=null; renderVehicles(); if(show)toast('GPS ట్రాకింగ్ ఆపబడింది.'); }
 $('#stopTrackingBtn').addEventListener('click',()=>stopTracking(true));
 $('#saveReportBtn')?.addEventListener('click',()=>saveHourlyReport(true));
 $('#exportReportsBtn')?.addEventListener('click',exportReports);
