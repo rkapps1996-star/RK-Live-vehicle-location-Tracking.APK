@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="te">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#087e8b">
+<meta name="description" content="RK LIVE VEHICLE TRACKING — consent-based live location sharing">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>RK LIVE VEHICLE TRACKING</title>
+<link rel="stylesheet" href="./styles.css">
+<style>
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="mark">RK<span>⌖</span></div><div><b>RK LIVE</b><small>VEHICLE TRACKING</small></div></div>
+  <span class="pill" id="connectionBadge">CHECKING...</span>
+</header>
+<main>
+  <section class="hero">
+    <div><p class="eyebrow">YOUR VEHICLES. YOUR CONTROL.</p><h1>ప్రతి ప్రయాణం<br><em>మీ చేతిలో.</em></h1>
+    <p class="muted">అనుమతితో లైవ్ లొకేషన్ షేరింగ్.</p></div>
+    <div class="hero-icon" aria-hidden="true">🚘<span>📍</span></div>
+  </section>
+<section id="appPanel">
+    <div class="notice"><b>భద్రత & అనుమతి</b> — GPSను వాహన యజమాని స్వయంగా ప్రారంభించి Stop నొక్కి ఎప్పుడైనా ఆపవచ్చు. Android foreground notification ద్వారా స్థానిక GPS పర్యవేక్షణ కొనసాగుతుంది; Battery Saver లేదా Force Stop వల్ల ఆగవచ్చు.</div>
+<nav class="tabs" aria-label="ప్రధాన విభాగాలు">
+      <button class="tab active" data-tab="dashboard">డ్యాష్‌బోర్డ్</button>
+      <button class="tab" data-tab="garage">వాహనాలు</button>
+      <button class="tab" data-tab="track">లైవ్ ట్రాకింగ్</button>
+      <button class="tab" data-tab="challan">చలాన్</button>
+      <button class="tab" data-tab="account">అకౌంట్</button>
+    </nav>
+
+    <section id="dashboard" class="panel active">
+      <div class="section-head"><div><p class="eyebrow">OVERVIEW</p><h2>మీ డ్యాష్‌బోర్డ్</h2></div><span class="live-dot">CONNECTED</span></div>
+      <div class="stats">
+        <article><span>నా వాహనాలు</span><strong id="vehicleCount">0</strong></article>
+        <article><span>యాక్టివ్ సెషన్</span><strong id="activeCount">0</strong></article>
+      </div>
+      <article class="card">
+        <h3>త్వరిత చర్యలు</h3>
+        <div class="quick">
+          <button class="quick-card" data-go="garage"><span>＋</span><b>వాహనం జోడించండి</b><small>నా గ్యారేజ్</small></button>
+          <button class="quick-card" data-go="track"><span>⌖</span><b>ట్రాకింగ్ తెరవండి</b><small>షేర్ / చూడండి</small></button>
+        </div>
+      </article>
+    </section>
+
+    <section id="garage" class="panel">
+      <div class="section-head"><div><p class="eyebrow">MY GARAGE</p><h2>నా వాహనాలు</h2></div></div>
+      <form id="vehicleForm" class="card form">
+        <label>రిజిస్ట్రేషన్ నంబర్<input id="reg" required maxlength="15" placeholder="ఉదా: TS09AB1234" autocapitalize="characters"></label>
+        <label>వాహనం రకం<select id="kind"><option>కారు</option><option>బైక్</option><option>ఇతర వాహనం</option></select></label>
+        <button class="btn primary" type="submit">＋ వాహనం జోడించండి</button>
+      </form>
+      <div id="vehicleList" class="list"></div>
+    </section>
+
+    <section id="track" class="panel">
+      <div class="section-head"><div><p class="eyebrow">CONSENT-BASED TRACKING</p><h2>లైవ్ ట్రాకింగ్</h2></div></div>
+      <article class="card form">
+        <h3>GPS విధానం ఎంచుకోండి</h3>
+        <p class="muted tiny">ప్రతి యూజర్ తన అవసరానికి తగిన విధానాన్ని ఎంచుకోవచ్చు. మీ ఎంపిక ఈ ఫోన్‌లో సేవ్ అవుతుంది.</p>
+        <div class="gps-options" role="radiogroup" aria-label="GPS విధానం">
+          <label class="gps-option"><input type="radio" name="gpsMode" value="mobile"><span><b>📱 Mobile GPS</b><small>ఈ ఫోన్ GPS ద్వారా ట్రాకింగ్</small></span></label>
+          <label class="gps-option"><input type="radio" name="gpsMode" value="device"><span><b>🚘 Vehicle GPS Device</b><small>వాహనంలో అమర్చిన GPS పరికరం</small></span></label>
+          <label class="gps-option"><input type="radio" name="gpsMode" value="both"><span><b>🔁 Both</b><small>ఫోన్ GPS + Vehicle GPS Device</small></span></label>
+        </div>
+        <div id="deviceGpsSettings" class="device-settings" hidden>
+          <h3>Vehicle GPS Device వివరాలు</h3>
+          <label>కంపెనీ / Model<input id="gpsDeviceModel" placeholder="ఉదా: GPS Tracker Model"></label>
+          <label>Device ID / IMEI<input id="gpsDeviceId" placeholder="పరికరం ID లేదా IMEI"></label>
+          <label>GPS Server / Platform<input id="gpsDeviceServer" placeholder="కంపెనీ ఇచ్చిన server address (ఐచ్ఛికం)"></label>
+          <button id="saveDeviceGpsBtn" class="btn secondary" type="button">Device వివరాలు సేవ్ చేయండి</button>
+          <div class="status">గమనిక: Device GPSను నిజంగా కనెక్ట్ చేయడానికి ఆ కంపెనీ server/API వివరాలు అవసరం. ఈ వివరాలు సేవ్ చేయడం మాత్రమే; ఇంకా live device connection కాదు.</div>
+        </div>
+        <div id="mobileGpsControls">
+        <h3>నా ఫోన్ GPS లొకేషన్ చూడండి</h3>
+        <label>వాహనం<select id="trackingVehicle"></select></label>
+        <p class="muted tiny">ప్రారంభించిన తర్వాత మీ ప్రస్తుత ఫోన్ GPS లొకేషన్ ఎంచుకున్న వాహనానికి లింక్ అవుతుంది. ఇది వాహనంలో ప్రత్యేక GPS పరికరం ఉన్నట్లు కాదు.</p>
+        <button id="startTrackingBtn" class="btn primary">GPS ప్రారంభించు</button>
+        <button id="stopTrackingBtn" class="btn danger" disabled>GPS ఆపు</button>
+        <div id="ownerTrackingStatus" class="status" aria-live="polite">షేరింగ్ ఆఫ్‌లో ఉంది.</div>
+        <button id="whatsappShareBtn" class="btn primary" disabled>WhatsAppలో లొకేషన్ షేర్ చేయండి</button>
+        <button id="copyCodeBtn" class="btn secondary">ప్రస్తుత మ్యాప్ లింక్ కాపీ చేయండి</button>
+        <p class="muted tiny">GPS ప్రారంభించిన తర్వాత Stop నొక్కే వరకు లొకేషన్ అప్‌డేట్ అవుతుంది. WhatsAppకు పంపేది ఆ సమయంలోని తాజా మ్యాప్ లింక్ మాత్రమే; WhatsAppలో ఆటోమేటిక్ లైవ్ అప్‌డేట్స్ పంపడానికి ప్రత్యేక Live Location ఫీచర్‌ను WhatsAppలోనే ప్రారంభించాలి.</p>
+        </div>
+      </article>
+
+      <article class="card form">
+        <h3>ప్రస్తుత ఫోన్ లొకేషన్</h3>
+        <p class="muted tiny">GPS ప్రారంభించినప్పుడు ఈ ఫోన్ లొకేషన్ మాత్రమే చూపిస్తుంది. లైవ్ షేరింగ్ లేదా మరొకరి వాహనాన్ని చూడటానికి క్లౌడ్ సర్వర్ అవసరం.</p>
+        <div id="viewerList" class="list"><div class="status">ఇంకా GPS ప్రారంభించలేదు.</div></div>
+      </article>
+
+      <article class="card form">
+        <div class="section-head"><div><p class="eyebrow">HOURLY HISTORY</p><h3>గంటవారీ రిపోర్టులు (<span id="reportCount">0</span>)</h3></div></div>
+        <p class="muted tiny">GPS ట్రాకింగ్ ONలో ఉన్నప్పుడు Android foreground service స్థానికంగా గంటకు ఒకసారి తాజా GPS రిపోర్ట్ సేవ్ చేస్తుంది. Force Stop, GPS ఆఫ్ లేదా ఫోన్ Battery restrictions వల్ల రిపోర్టులు ఆగవచ్చు.</p>
+        <button id="saveReportBtn" class="btn secondary" type="button">ఇప్పుడే రిపోర్ట్ సేవ్ చేయండి</button>
+        <button id="exportReportsBtn" class="btn secondary" type="button">CSV రిపోర్ట్ డౌన్‌లోడ్</button>
+        <div id="hourlyReportList" class="list"><div class="status">ఇంకా రిపోర్టులు లేవు.</div></div>
+      </article>
+
+      <article class="card map-card">
+        <div class="map-placeholder"><span>📍</span><b id="viewerVehicleName">లొకేషన్ కోసం వేచి ఉంది</b><small id="viewerLocation">మీరు చేరిన షేరింగ్ సెషన్‌ను ఎంచుకోండి.</small></div>
+        <div class="card-bottom"><button id="openViewerMapBtn" class="btn secondary" disabled>మ్యాప్‌లో చూడండి</button><small id="lastUpdate"></small></div>
+      </article>
+    </section>
+
+    <section id="challan" class="panel">
+      <div class="section-head"><div><p class="eyebrow">TRAFFIC E-CHALLAN</p><h2>చలాన్ వివరాలు</h2></div></div>
+      <article class="card form">
+        <h3>మీ వాహన చలాన్ చెక్ చేయండి</h3>
+        <p class="muted">ప్రభుత్వ అధికారిక eChallan పోర్టల్‌లో మీ వాహనానికి సంబంధించిన పెండింగ్ చలాన్లు చూడవచ్చు. వివరాలు అక్కడే నమోదు చేయండి.</p>
+        <a class="btn primary linkbtn" href="https://echallan.parivahan.gov.in/" target="_blank" rel="noopener noreferrer">చలాన్ చెక్ చేయండి ↗</a>
+        <div class="status"><b>ఎలా చెక్ చేయాలి?</b><br>1. పై బటన్ నొక్కండి.<br>2. అధికారిక వెబ్‌సైట్‌లో Check Challan Details ఎంచుకోండి.<br>3. వాహన నంబర్ లేదా అడిగిన వివరాలు నమోదు చేయండి.<br>4. Captcha పూర్తి చేసి Get Details నొక్కండి.</div>
+        <p class="muted tiny">గమనిక: చలాన్ సమాచారం ప్రభుత్వ పోర్టల్ నుంచే వస్తుంది. ఈ యాప్ మీ చలాన్ డేటాను నిల్వ చేయదు; చెల్లింపులు కూడా అధికారిక పోర్టల్‌లోనే చేయండి.</p>
+      </article>
+    </section>
+
+    <section id="account" class="panel">
+      <div class="section-head"><div><p class="eyebrow">ACCOUNT</p><h2>అకౌంట్ & డేటా</h2></div></div>
+      <article class="card">
+        <p class="muted">ఈ ఫోన్‌లోని డేటా</p><b>Login అవసరం లేదు</b>
+         <p class="muted tiny">వాహన వివరాలు, GPS సెట్టింగ్స్, గంటవారీ రిపోర్టులు ఈ Android appలో ఈ ఫోన్‌కే స్థానికంగా సేవ్ అవుతాయి.</p>
+      </article>
+      <article class="card plan"><p class="eyebrow">PLANNED SUBSCRIPTION</p><h2>₹99 <small>/ నెల</small></h2><b>Unlimited Vehicle Tracking</b><p class="muted tiny">ఇది ధర నమూనా మాత్రమే. పేమెంట్ గేట్‌వే ఇంకా కనెక్ట్ కాలేదు.</p></article>
+      <a class="btn primary linkbtn" href="https://echallan.parivahan.gov.in/" target="_blank" rel="noopener noreferrer">అధికారిక eChallan తెరవండి ↗</a>
+      <button id="clearBtn" class="btn danger">ఈ ఫోన్‌లోని వాహన డేటా తొలగించండి</button>
+    </section>
+  </section>
+  <footer>RK LIVE VEHICLE TRACKING <span>•</span> Consent first</footer>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="./app.js?v=9"></script>
+</body>
+  </html>
+  
