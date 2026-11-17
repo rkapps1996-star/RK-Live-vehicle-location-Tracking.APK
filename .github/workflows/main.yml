@@ -45,12 +45,17 @@ jobs:
           test -d app
           test -f settings.gradle
 
-      - name: Verify Web Assets
+      - name: Find Web Assets
         run: |
-          ls -la app/src/main/assets/
-          test -f app/src/main/assets/index.html
-          test -f app/src/main/assets/app.js
-          test -f app/src/main/assets/styles.css
+          echo "Current directory:"
+          pwd
+          echo "All asset folders:"
+          find . -type d -name assets
+          echo "Web files:"
+          find . -type f \( -name index.html -o -name app.js -o -name styles.css \)
+          echo "Current commit:"
+          git log -1 --oneline
+
 
       - name: Build APK
         run: gradle --no-daemon assembleDebug
